@@ -31,6 +31,8 @@
     </select>
     <label for="circleSpeed">Set Circle Speed:</label>
     <input type="number" id="circleSpeed" value="2" onchange="updateCircleSpeed()">
+    <label for="spawnCount">Set Spawn Count:</label>
+    <input type="number" id="spawnCount" value="1" onchange="updateSpawnCount()">
 
     <script>
         let canvas = document.getElementById('canvas');
@@ -39,6 +41,7 @@
         let bounceCount = 0;
         let autoSpawnInterval; // Variable to store the auto-spawn interval ID
         let selectedCircleType = "random"; // Default to random
+        let spawnCount = 1; // Default spawn count
 
         function getRandomColor() {
             // Generate a bright color
@@ -85,8 +88,10 @@
         function onCanvasClick(e) {
             let centerX = e.clientX;
             let centerY = e.clientY;
-            let circle = createCircle(centerX, centerY, selectedCircleType);
-            circles.push(circle);
+            for (let i = 0; i < spawnCount; i++) {
+                let circle = createCircle(centerX, centerY, selectedCircleType);
+                circles.push(circle);
+            }
         }
 
         function toggleAutoSpawn() {
@@ -97,8 +102,10 @@
                 autoSpawnInterval = setInterval(function() {
                     let centerX = canvas.width / 2;
                     let centerY = canvas.height / 2;
-                    let circle = createCircle(centerX, centerY, selectedCircleType);
-                    circles.push(circle);
+                    for (let i = 0; i < spawnCount; i++) {
+                        let circle = createCircle(centerX, centerY, selectedCircleType);
+                        circles.push(circle);
+                    }
                 }, 250);
             }
         }
@@ -106,8 +113,10 @@
         function autoSpawnCircles() {
             let centerX = canvas.width / 2;
             let centerY = canvas.height / 2;
-            let circle = createCircle(centerX, centerY, selectedCircleType);
-            circles.push(circle);
+            for (let i = 0; i < spawnCount; i++) {
+                let circle = createCircle(centerX, centerY, selectedCircleType);
+                circles.push(circle);
+            }
         }
 
         function animateCircles() {
@@ -155,6 +164,13 @@
                     circles[i].speedX = (Math.random() - 0.5) * newSpeed;
                     circles[i].speedY = (Math.random() - 0.5) * newSpeed;
                 }
+            }
+        }
+
+        function updateSpawnCount() {
+            spawnCount = parseInt(document.getElementById("spawnCount").value);
+            if (isNaN(spawnCount) || spawnCount < 1) {
+                spawnCount = 1;
             }
         }
 
