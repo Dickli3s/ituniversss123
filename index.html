@@ -4,8 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body {
+            width: 600px;
+            height: 600px;
+            background: #ebfff1; /* Gray background color */
+            margin: 0;
+            overflow: hidden;
+        }
+    
+        canvas {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <h1>hello worldd!</h1>
+    <canvas id="canvas" width="1200" height="800" onclick="onCanvasClick(event)"></canvas>
+    <button onclick="toggleAutoSpawn()">Toggle Auto Spawn</button>
+    <button onclick="autoSpawnCircles()">Spawn a Circle</button>
+    <p>Bounces: <span id="bounceCounter">0</span></p>
+    <label for="circleType">Choose Circle Type:</label>
+    <select id="circleType" onchange="updateSelectedCircleType()">
+        <option value="random">Random</option>
+        <option value="small">Small</option>
+        <option value="large">Large</option>
+    </select>
+    <label for="circleSpeed">Set Circle Speed:</label>
+    <input type="number" id="circleSpeed" value="2" onchange="updateCircleSpeed()">
+
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let circles = [];
+        let bounceCount = 0;
+        let autoSpawnInterval; // Variable to store the auto-spawn interval ID
+        let selectedCircleType = "random"; // Default to random
+
+        function getRandomColor() {
+            // Generate a bright color
+            return '#' + Math.floor(Math.random()*16777215).toString(16);
+        }
+
+        function getRandomRadius() {
+            // Generate a random radius between 10 and 30
+            return Math.floor(Math.random() * (30 - 10 + 1)) + 10;
+        }
+
+        function getRandomSpeed() {
+            return (Math.random() - 0.5) * 4; // Random speed between -2 and 2
+        }
+
+        function createCircle(x, y, type) {
+            let radius;
+            let color;
+
+            switch (type) {
+                case "small":
+                    radius = 15;
+                    color = "blue";
+                    break;
+                case "large":
+                    radius = 30;
+                    color = "green";
+                    break;
+                default:
+                    radius = getRandomRadius();
+                    color = getRandomColor();
+            }
+
+            return {
+                x: x,
+                y: y,
+                radius: radius,
+                color: color,
+                speedX: getRandomSpeed(),
+                speedY: getRandomSpeed()
+            };
+        }
+
+        function onCanvasClick(e) {
+            let centerX = e.clientX;
+            let centerY = e.clientY;
+            let circle = createCircle(centerX, centerY, selectedCircleType);
+            circles.push(circle);
+        }
+
+        function toggleAutoSpawn() {
+            if (autoSpawnInterval) {
+                clearInterval(autoSpawnInterval); // Stop auto-spawning if it's active
+                autoSpawnInterval = null;
+            } else {
+                autoSpawnInterval = setInterval(function() {
+                    let centerX = canvas.width / 2;
+                    let centerY = canvas.height / 2;
+                    let circle = createCircle(centerX, centerY, selectedCircleType);
+                    circles.push(circle);
+                }, 250);
+            }
+        }
+
+        function autoSpawnCircles() {
+            let centerX = canvas.width / 2;
+            let centerY = canvas.height / 2;
+            let circle = createCircle(centerX, centerY, selectedCircleType);
+            circles.push(circle);
+        }
+
+        function animateCircles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < circles.length; i++) {
+                let circle = circles[i];
+
+                ctx.fillStyle = circle.color;
+                ctx.beginPath();
+                ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                circle.x += circle.speedX;
+                circle.y += circle.speedY;
+
+                // Check for collisions with canvas boundaries
+                if (circle.x - circle.radius < 0 || circle.x + circle.radius > canvas.width) {
+                    circle.speedX = -circle.speedX; // Reverse the horizontal direction
+                    incrementBounceCounter();
+                }
+
+                if (circle.y - circle.radius < 0 || circle.y + circle.radius > canvas.height) {
+                    circle.speedY = -circle.speedY; // Reverse the vertical direction
+                    incrementBounceCounter();
+                }
+            }
+
+            requestAnimationFrame(animateCircles);
+        }
+
+        function incrementBounceCounter() {
+            bounceCount++;
+            document.getElementById('bounceCounter').innerText = bounceCount;
+        }
+
+        function updateSelectedCircleType() {
+            selectedCircleType = document.getElementById("circleType").value;
+        }
+
+        function updateCircleSpeed() {
+            let newSpeed = parseFloat(document.getElementById("circleSpeed").value);
+            if (!isNaN(newSpeed)) {
+                for (let i = 0; i < circles.length; i++) {
+                    circles[i].speedX = (Math.random() - 0.5) * newSpeed;
+                    circles[i].speedY = (Math.random() - 0.5) * newSpeed;
+                }
+            }
+        }
+
+        animateCircles();
+    </script>
 </body>
 </html>
